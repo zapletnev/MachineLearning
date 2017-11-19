@@ -63,40 +63,75 @@ Theta2_grad = zeros(size(Theta2));
 %
 
 
+% part1
 a1 = [ones(m, 1) X];
-a2 = sigmoid(Theta1*a1');
-a2 = [ones(size(a2, 2), 1)'; a2];
+z2 = sigmoid(Theta1*a1');
+a2 = [ones(size(z2, 2), 1)'; z2];
 a3 = sigmoid(Theta2*a2);
 h = a3;
 
 k = num_labels;
 
-new_y = zeros(m, k);
-for i = 1 : m
-    y_element = zeros(10, 1);
-    y_element(y(i))=1;
-    new_y(i, :) = y_element;
-end
+K = num_labels;
+new_y = eye(k)(y, :);
 
 J = 1 / m * sum(sum((-new_y .* log(h') - (1 - new_y) .* log(1 - h'))));
+
+Theta1NoBias = Theta1(:, 2:end);
+Theta2NoBias = Theta2(:, 2:end);
 
 reg = 0;
 
 for j = 1:hidden_layer_size
-    for k = 1:input_layer_size
-        reg = reg + Theta1(j,k+1)^2;
+    for i = 1:input_layer_size
+        reg = reg + Theta1(j,i+1)^2;
     endfor
 endfor
 
-for j = 1:10
-    for k = 1:hidden_layer_size
-        reg = reg + Theta2(j,k+1)^2;
+for j = 1:k
+    for i = 1:hidden_layer_size
+        reg = reg + Theta2(j,i+1)^2;
     endfor
 endfor
 
 reg = (lambda / (2*m)) * reg;
 
 J = J +reg;
+
+% part2
+
+k = num_labels;
+Delta1 = 0;
+Delta2 = 0;
+
+for t = 1:m
+	% Input
+	a1 = [1; X(t, :)'];
+	z2 = Theta1 * a1;
+	a2 = [1; sigmoid(z2)];
+
+	z3 = Theta2 * a2;
+	a3 = sigmoid(z3);
+
+	% Delta Output
+	d3 = a3 - new_y(t, :)';
+	
+	% Delta Hidden Layer
+	d2 = (Theta2NoBias' * d3) .* sigmoidGradient(z2);
+
+	% Accumulate
+	Delta2 += (d3 * a2');
+	Delta1 += (d2 * a1');
+endfor
+
+Theta1_grad = (1 / m) * Delta1;
+Theta2_grad = (1 / m) * Delta2;
+
+% part3
+
+Theta1_grad(:, 2:end) += ((lambda / m) * Theta1NoBias);
+Theta2_grad(:, 2:end) += ((lambda / m) * Theta2NoBias);
+
 % -------------------------------------------------------------
 
 % =========================================================================
