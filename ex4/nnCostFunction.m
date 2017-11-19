@@ -71,16 +71,14 @@ h = a3;
 
 k = num_labels;
 
-s = 0;
-for i = 1:m
-    y_element = ones(10, 1) .* 0;
+new_y = zeros(m, k);
+for i = 1 : m
+    y_element = zeros(10, 1);
     y_element(y(i))=1;
-    for k = 1:k
-        s = s - y_element(k)*log(h'(i, k)) - (1-y_element(k))*log(1-h'(i, k));
-    endfor
-endfor
+    new_y(i, :) = y_element;
+end
 
-J = s/m;
+J = 1 / m * sum(sum((-new_y .* log(h') - (1 - new_y) .* log(1 - h'))));
 
 reg = 0;
 
