@@ -27,20 +27,10 @@ for epsilon = min(pval):stepsize:max(pval)
     fp = 0;
     fn = 0;
 
-    for i = 1:size(pval, 1)
-        if (pval(i) < epsilon)
-            if (yval(i) == 1)
-                tp += 1;
-            else
-                fp += 1;
-            endif
-        else
-            if (yval(i) == 1)
-                fn += 1;
-            endif
-        endif
-    endfor
-
+    cvPredictions = (pval < epsilon);
+    fp = sum((cvPredictions == 1) & (yval == 0));
+    tp = sum((cvPredictions == 1) & (yval == 1));
+    fn = sum((cvPredictions == 0) & (yval == 1));
 
     prec = tp / (tp + fp);
     rec = tp / (tp + fn);
